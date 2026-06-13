@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Soundcheck — Know the room before you play the room</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="brand">Soundcheck</div>
+    <nav>
+      <a href="#venues">Browse</a>
+      <a href="#gig-checker">Gig Checker</a>
+      <a href="#submit">Submit Review</a>
+      <a href="#request">Request Venue</a>
+    </nav>
+  </header>
+
+  <section class="hero compact-hero">
+    <div>
+      <p class="eyebrow">Venue reviews for musicians</p>
+      <h1>Know the room before you play the room.</h1>
+      <p class="subhead">Glassdoor-style venue intelligence: pay reliability, sound, booker communication, load-in, crowd fit, and verified venue facts.</p>
+    </div>
+  </section>
+
+  <section id="venues" class="section browse-section">
+    <div class="section-header browse-header">
+      <div>
+        <h2>NYC venue reviews</h2>
+        <p class="section-copy">Browse artist-first venue notes. Click “Venue Facts” to open the research panel.</p>
+      </div>
+      <input id="search" type="text" placeholder="Search venue, neighborhood, genre..." />
+    </div>
+
+    <div class="browse-layout">
+      <div id="venueGrid" class="venue-list"></div>
+      <aside id="venueFacts" class="facts-panel">
+        <div class="panel-empty">
+          <div class="panel-badge">Facts</div>
+          <h3>Select a venue</h3>
+          <p>Venue facts, review themes, and decision notes will appear here.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="gig-checker" class="section checker-section">
+    <h2>Should I take this gig?</h2>
+    <p class="section-copy">Enter the offer details. Soundcheck gives a quick recommendation.</p>
+    <form id="gigForm" class="checker-form">
+      <label>Guarantee / expected pay ($)<input id="pay" type="number" value="150" /></label>
+      <label>Travel time one-way (minutes)<input id="travel" type="number" value="35" /></label>
+      <label>Venue score<input id="venueScore" type="number" value="78" min="0" max="100" /></label>
+      <label>Day of week
+        <select id="day">
+          <option value="weekday">Weekday</option>
+          <option value="weekend">Weekend</option>
+        </select>
+      </label>
+      <button class="button primary" type="submit">Check gig</button>
+    </form>
+    <div id="gigResult" class="result-card hidden"></div>
+  </section>
+
+  <section id="submit" class="section submit-section">
+    <div class="form-intro">
+      <div>
+        <p class="eyebrow">Contribute anonymously</p>
+        <h2>Submit a venue review</h2>
+        <p class="section-copy">Help other musicians know what they are walking into before they accept the gig.</p>
+      </div>
+      <div class="privacy-card">
+        <strong>Artist-first privacy</strong>
+        <p>Your public review can stay anonymous. Email is only for follow-up and beta access.</p>
+      </div>
+    </div>
+
+    <form id="reviewForm" class="review-form glass-form">
+      <label>Venue name<input id="reviewVenue" type="text" placeholder="e.g. Baby's All Right" required /></label>
+      <label>City / neighborhood<input id="reviewLocation" type="text" placeholder="Brooklyn, Williamsburg" /></label>
+      <label>Your email <span class="optional">optional</span><input id="reviewEmail" type="email" placeholder="you@email.com" /></label>
+      <label>What did you play?<input id="reviewGenre" type="text" placeholder="math rock, indie, DJ set..." /></label>
+
+      <label>Actual payout<input id="reviewPayout" type="text" placeholder="$150 guarantee / door split / unpaid" /></label>
+      <label>Would you play again?
+        <select id="reviewAgain">
+          <option>Yes</option>
+          <option>Maybe</option>
+          <option>No</option>
+        </select>
+      </label>
+      <label>Sound quality
+        <select id="reviewSound"><option>5 - Great</option><option>4 - Good</option><option>3 - Okay</option><option>2 - Rough</option><option>1 - Bad</option></select>
+      </label>
+      <label>Booker communication
+        <select id="reviewBooker"><option>5 - Great</option><option>4 - Good</option><option>3 - Okay</option><option>2 - Rough</option><option>1 - Bad</option></select>
+      </label>
+      <label>Pay reliability
+        <select id="reviewPay"><option>5 - Paid clearly/on time</option><option>4 - Mostly clear</option><option>3 - Mixed</option><option>2 - Unclear</option><option>1 - Problematic</option></select>
+      </label>
+      <label>Load-in
+        <select id="reviewLoadin"><option>5 - Easy</option><option>4 - Fine</option><option>3 - Medium</option><option>2 - Annoying</option><option>1 - Bad</option></select>
+      </label>
+
+      <label class="checkbox-row"><input id="anonymous" type="checkbox" checked /> Show my review as anonymous</label>
+      <label class="full-span">Private note to other artists<textarea id="reviewNote" placeholder="Load-in was easy, booker was responsive, soundcheck was rushed..."></textarea></label>
+      <button class="button primary" type="submit">Submit review</button>
+      <div id="reviewSuccess" class="inline-success hidden">Review saved in prototype mode. Next step: connect this to Airtable or Supabase.</div>
+    </form>
+  </section>
+
+  <section id="request" class="section request-section">
+    <div class="form-intro">
+      <div>
+        <p class="eyebrow">Missing venue?</p>
+        <h2>Request a venue</h2>
+        <p class="section-copy">Ask Soundcheck to add a venue you are considering, booked at, or curious about.</p>
+      </div>
+    </div>
+
+    <form id="requestForm" class="request-form glass-form">
+      <label>Venue name<input id="requestVenue" type="text" placeholder="e.g. TV Eye" required /></label>
+      <label>Neighborhood / city<input id="requestLocation" type="text" placeholder="Ridgewood, Queens" /></label>
+      <label>Your email <span class="optional">optional</span><input id="requestEmail" type="email" placeholder="you@email.com" /></label>
+      <label>Why should we add it?<textarea id="requestReason" placeholder="I got offered a show here / my band played here / I want to compare it..."></textarea></label>
+      <button class="button primary" type="submit">Request venue</button>
+      <div id="requestSuccess" class="inline-success hidden">Venue request saved in prototype mode.</div>
+    </form>
+  </section>
+
+  <footer>
+    <p>Soundcheck — artist-first venue intelligence.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
