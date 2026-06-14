@@ -34,6 +34,54 @@ const venues = [
   { name: "Purgatory", area: "Brooklyn", neighborhood: "Bushwick", genres: "DIY / indie / punk", score: 73, pay: "Varies", sound: 7.2, booker: 7.0, loadin: "Medium", audience: 7.1, reviews: 12, wouldPlayAgain: 69, capacity: 200, age: "21+", website: "purgatorybk.com", instagram: "@purgatorybk", note: "Good scene crossover, check bill fit before confirming.", pros: ["DIY energy", "Good crossover bills", "Welcoming to new projects"], cons: ["Lower predictability", "Confirm payout and set time"] }
 ];
 
+
+function slugifyVenue(name) {
+  return name
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+function profileUrl(v) {
+  return `venue.html?venue=${slugifyVenue(v.name)}`;
+}
+
+function findVenueFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get('venue');
+  if (!slug) return venues[0];
+  return venues.find(v => slugifyVenue(v.name) === slug) || venues[0];
+}
+
+function openWebsiteUrl(website) {
+  if (!website) return '#';
+  return website.startsWith('http') ? website : `https://${website}`;
+}
+
+const sampleReviews = {
+  "Alphaville": [
+    { title: "Good energy for a weeknight bill", author: "Anonymous guitarist", date: "Prototype review", rating: 4, text: "Room felt good and the crowd was engaged. I would confirm payout details before announcing the show." },
+    { title: "Best when the lineup is matched well", author: "Indie drummer", date: "Prototype review", rating: 4, text: "Strong local vibe. Works well when the bands share an audience instead of random genre mixing." }
+  ],
+  "Baby's All Right": [
+    { title: "Professional room, strong audience fit", author: "Anonymous vocalist", date: "Prototype review", rating: 5, text: "Production felt smooth and the venue has real name recognition. Good room for an established local release show." },
+    { title: "Clarify promo expectations", author: "Touring band member", date: "Prototype review", rating: 4, text: "Great stage and sound. I would ask exactly what the venue is doing versus what the artist needs to drive." }
+  ],
+  "The Broadway": [
+    { title: "Useful for building local following", author: "Anonymous bassist", date: "Prototype review", rating: 4, text: "Easy to imagine bringing friends here. Door split means you should be realistic about draw." }
+  ],
+  "Our Wicked Lady": [
+    { title: "Fun vibe, logistics depend on setup", author: "DJ / producer", date: "Prototype review", rating: 4, text: "Memorable energy and rooftop feel. Load-in can be the thing to check before saying yes." }
+  ],
+  "Trans-Pecos": [
+    { title: "Great fit for experimental projects", author: "Experimental artist", date: "Prototype review", rating: 5, text: "Audience was open-minded and the room made sense for left-field music. Strong fit matters more than general popularity." }
+  ],
+  "Purgatory": [
+    { title: "Good DIY crossover, ask details", author: "Anonymous band member", date: "Prototype review", rating: 3, text: "Cool scene crossover. I would confirm payout, set time, and what the full bill looks like before committing." }
+  ]
+};
+
 const grid = document.getElementById('venueGrid');
 const search = document.getElementById('search');
 const factsPanel = document.getElementById('venueFacts');
@@ -78,12 +126,13 @@ function renderVenues(list) {
         <div><span class="mini-label">Watch out</span><p>${v.cons[0]}</p></div>
       </div>
 
-      <button class="facts-link" type="button" data-venue="${v.name}">Venue Facts →</button>
+      <div class="card-actions"><button class="facts-link" type="button" data-venue="${v.name}">Quick Facts →</button><a class="profile-link" href="${profileUrl(v)}">Full Profile</a></div>
     </article>
   `).join('');
 
   document.querySelectorAll('.facts-link, .venue-card').forEach(el => {
     el.addEventListener('click', e => {
+      if (e.target.closest('.profile-link')) return;
       const venueName = e.currentTarget.dataset.venue;
       const venue = venues.find(v => v.name === venueName);
       selectedVenueName = venueName;
@@ -131,6 +180,8 @@ function showVenueFacts(v) {
       </div>
     </div>
 
+    <a class="button primary full-profile-button" href="${profileUrl(v)}">Open full venue profile</a>
+
     <div class="source-note">Source mix: prototype artist reviews + public venue facts. Replace with verified sources as database grows.</div>
   `;
 }
@@ -140,19 +191,115 @@ function filterVenues() {
   return venues.filter(v => `${v.name} ${v.area} ${v.neighborhood} ${v.genres}`.toLowerCase().includes(q));
 }
 
-renderVenues(venues);
-showVenueFacts(venues[0]);
+if (grid && search && factsPanel) {
+  renderVenues(venues);
+  showVenueFacts(venues[0]);
 
-search.addEventListener('input', () => {
+  search.addEventListener('input', () => {
   const filtered = filterVenues();
   if (!filtered.some(v => v.name === selectedVenueName) && filtered.length) {
     selectedVenueName = filtered[0].name;
     showVenueFacts(filtered[0]);
   }
   renderVenues(filtered);
-});
+  });
+}
 
-document.getElementById('gigForm').addEventListener('submit', e => {
+function renderVenueProfilePage() {
+  const profileRoot = document.getElementById('venueProfile');
+  if (!profileRoot) return;
+  const v = findVenueFromUrl();
+  const reviews = sampleReviews[v.name] || [];
+  document.title = `${v.name} — Soundcheck Venue Profile`;
+  profileRoot.innerHTML = `
+    <section class="profile-hero">
+      <div>
+        <a class="back-link" href="index.html#venues">← Back to NYC venues</a>
+        <p class="eyebrow">Venue Profile</p>
+        <h1>${v.name}</h1>
+        <p class="subhead">${v.neighborhood} · ${v.genres}</p>
+        <p class="profile-summary">${v.note}</p>
+        <div class="profile-actions">
+          <a class="button primary" href="index.html#submit">Review this venue</a>
+          <a class="button secondary" href="${openWebsiteUrl(v.website)}" target="_blank" rel="noreferrer">Venue website</a>
+        </div>
+      </div>
+      <div class="profile-score-card">
+        <span class="label">Soundcheck Score</span>
+        <div class="score">${v.score}</div>
+        <p><strong>${v.wouldPlayAgain}%</strong> would play again · <strong>${v.reviews}</strong> artist reviews</p>
+      </div>
+    </section>
+
+    <section class="section profile-grid-section">
+      <div class="profile-grid">
+        <main class="profile-main">
+          <article class="profile-card">
+            <h2>Rating breakdown</h2>
+            ${metricBar('Sound quality', v.sound)}
+            ${metricBar('Booker communication', v.booker)}
+            ${metricBar('Audience fit', v.audience)}
+            ${metricBar('Pay reliability proxy', Math.min(10, v.score / 10))}
+          </article>
+
+          <article class="profile-card">
+            <h2>Musician notes</h2>
+            <div class="two-col">
+              <div>
+                <h4>Pros</h4>
+                <ul>${v.pros.map(item => `<li>${item}</li>`).join('')}</ul>
+              </div>
+              <div>
+                <h4>Watch out</h4>
+                <ul>${v.cons.map(item => `<li>${item}</li>`).join('')}</ul>
+              </div>
+            </div>
+          </article>
+
+          <article class="profile-card">
+            <div class="reviews-header">
+              <h2>Recent artist reviews</h2>
+              <a href="index.html#submit">Add review</a>
+            </div>
+            <div class="review-list">
+              ${reviews.map(r => `
+                <div class="review-item">
+                  <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+                  <h3>${r.title}</h3>
+                  <p class="meta">${r.author} · ${r.date}</p>
+                  <p>${r.text}</p>
+                </div>
+              `).join('') || '<p class="section-copy">No public reviews yet. Be the first artist to review this venue.</p>'}
+            </div>
+          </article>
+        </main>
+
+        <aside class="profile-sidebar">
+          <article class="profile-card sticky-card">
+            <h2>Venue facts</h2>
+            <div class="fact-grid single">
+              <div><span>Capacity</span><strong>${v.capacity}</strong></div>
+              <div><span>Age policy</span><strong>${v.age}</strong></div>
+              <div><span>Neighborhood</span><strong>${v.neighborhood}</strong></div>
+              <div><span>Borough / Area</span><strong>${v.area}</strong></div>
+              <div><span>Website</span><strong>${v.website}</strong></div>
+              <div><span>Instagram</span><strong>${v.instagram}</strong></div>
+              <div><span>Common pay signal</span><strong>${v.pay}</strong></div>
+              <div><span>Load-in</span><strong>${v.loadin}</strong></div>
+            </div>
+            <a class="button secondary sidebar-button" href="index.html#request">Request an update</a>
+            <p class="source-note">Profile data is MVP seed data. Use submitted musician reviews to replace prototype signals over time.</p>
+          </article>
+        </aside>
+      </div>
+    </section>
+  `;
+}
+renderVenueProfilePage();
+
+const gigForm = document.getElementById('gigForm');
+if (gigForm) {
+  gigForm.addEventListener('submit', e => {
   e.preventDefault();
   const pay = Number(document.getElementById('pay').value);
   const travel = Number(document.getElementById('travel').value);
@@ -167,7 +314,8 @@ document.getElementById('gigForm').addEventListener('submit', e => {
   const result = document.getElementById('gigResult');
   result.classList.remove('hidden');
   result.innerHTML = `<h3>${verdict}</h3><p>${text}</p><p><strong>Gig score:</strong> ${Math.round(score)}/120</p>`;
-});
+  });
+}
 
 const reviewForm = document.getElementById('reviewForm');
 if (reviewForm) {
